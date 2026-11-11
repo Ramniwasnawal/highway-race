@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>हाईवे रेस</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1d1a2b;--ink:#fff4d6;--gold:#ffc928;--panel:rgba(29,26,43,.9);--btn:#2f2a47;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'Baloo 2','Noto Sans Devanagari',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+canvas{display:block;border-radius:14px;box-shadow:0 0 0 3px #3b3556}
+#pad{display:flex;gap:12px;padding:10px 14px 14px}
+#pad button{flex:1;height:66px;border-radius:20px;border:2px solid var(--gold);background:var(--btn);color:var(--gold);font-size:30px;font-family:inherit;touch-action:none}
+#pad button:active{background:var(--gold);color:#1d1a2b}
+#pad #nb{flex:1.3;font-size:24px;font-family:inherit}
+#pad #mb{flex:0 0 56px;font-size:22px}
+#cars{display:flex;gap:8px;margin:0 0 20px;max-width:100%;overflow-x:auto;padding:2px}
+.cb{flex:0 0 auto;white-space:nowrap;font-family:inherit;font-size:16px;padding:8px 10px;border-radius:16px;border:2px solid #3b3556;background:var(--btn);color:var(--ink)}
+.cb.on{border-color:var(--gold);color:var(--gold)}
+#ov,#mp{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);text-align:center;padding:24px;z-index:5}
+#ov.hide,#mp.hide{display:none}
+#ov h1,#mp h1{font-size:46px;font-weight:800;margin:0 0 6px;color:var(--gold);line-height:1.1}
+#ov p,#mp p{font-size:19px;margin:0 0 22px;max-width:300px;line-height:1.5}
+#go,#jn,#rd{font-family:inherit;font-size:24px;font-weight:800;padding:10px 34px;border-radius:30px;border:0;background:var(--gold);color:#1d1a2b}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.alt{font-family:inherit;font-size:18px;margin-top:12px;padding:8px 22px;border-radius:26px;border:2px solid var(--gold);background:transparent;color:var(--gold)}
+#ci{font-family:inherit;font-size:22px;text-align:center;padding:8px;border-radius:14px;border:2px solid #3b3556;background:var(--btn);color:var(--ink);margin-bottom:16px;width:220px}
+#ms{white-space:pre-line}
+button:disabled{opacity:.5}
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c" width="360" height="640"></canvas></div>
+<div id="pad"><button id="bl" aria-label="बाएँ">◀</button><button id="nb" aria-label="नाइट्रो">⚡ नाइट्रो</button><button id="br" aria-label="दाएँ">▶</button><button id="mb" aria-label="आवाज़">🔊</button></div>
+<div id="ov"><h1 id="t">हाईवे रेस</h1><p id="m">बाएँ या दाएँ टैप करके गाड़ियों से बचिए, सिक्के जमा कीजिए और ⚡ दबाकर नाइट्रो लीजिए।</p><div id="cars"><button class="cb on" data-c="#ffc928" data-a=".25" data-n="1" data-w="38" data-h="64">🚕 टैक्सी</button><button class="cb" data-c="#e10600" data-a=".42" data-n="1.4" data-w="40" data-h="60">🏎️ सुपरकार</button><button class="cb" data-c="#c9ced6" data-a=".22" data-n=".8" data-w="40" data-h="72">🚘 लग्ज़री सेडान</button><button class="cb" data-c="#4d96ff" data-a=".18" data-n=".6" data-w="42" data-h="68">🚙 एसयूवी</button><button class="cb" data-c="#2ec4b6" data-a=".2" data-n=".7" data-w="42" data-h="74">🛻 पिकअप</button><button class="cb" data-c="#ff6b35" data-a=".5" data-n="1.6" data-w="34" data-h="58">🏁 रेसिंग रॉकेट</button><button class="cb" data-c="#f5e6a8" data-a=".3" data-n="1" data-w="38" data-h="62">🚗 क्लासिक रोडस्टर</button><button class="cb" data-c="#00f5d4" data-a=".35" data-n=".5" data-w="36" data-h="60">⚡ फ्यूचर EV</button><button class="cb" data-c="#4361ee" data-a=".24" data-n=".9" data-w="40" data-h="70">🇩🇪 जर्मन लग्ज़री</button><button class="cb" data-c="#ffffff" data-a=".38" data-n="1" data-w="34" data-h="56">🇯🇵 जापानी हैचबैक</button><button class="cb" data-c="#ff9f1c" data-a=".45" data-n="1.5" data-w="41" data-h="60">🇮🇹 इतालवी सुपरकार</button><button class="cb" data-c="#2d6a4f" data-a=".26" data-n=".9" data-w="38" data-h="66">🇬🇧 ब्रिटिश क्लासिक</button><button class="cb" data-c="#7209b7" data-a=".36" data-n=".5" data-w="37" data-h="62">🇨🇳 चीनी EV</button><button class="cb" data-c="#adb5bd" data-a=".2" data-n=".7" data-w="41" data-h="70">🇸🇪 स्वीडिश सेफ़्टी</button><button class="cb" data-c="#8d5524" data-a=".2" data-n=".6" data-w="43" data-h="68">🇮🇳 इंडियन एसयूवी</button><button class="cb" data-c="#00b4d8" data-a=".3" data-n=".8" data-w="39" data-h="64">🇰🇷 कोरियन क्रॉसओवर</button></div><button id="go">खेल शुरू करें</button><button id="fr" class="alt">👥 दोस्त के साथ खेलें</button></div>
+<div id="mp" class="hide"><h1>दोस्त के साथ</h1><p>एक ही कोड डालकर दोनों कमरे में आइए, फिर दोनों "तैयार हूँ" दबाइए। दोनों को एक जैसा रास्ता मिलेगा, ज़्यादा स्कोर वाला जीतेगा।</p><input id="ci" maxlength="24" autocapitalize="off" autocomplete="off" aria-label="कमरे का कोड"><p id="ms"></p><button id="jn">कमरे में जाएँ</button><button id="rd" hidden>तैयार हूँ</button><button id="sh" class="alt" hidden>🔗 दोस्त को लिंक भेजें</button><input id="lk" readonly hidden aria-label="लिंक" style="font-family:inherit;font-size:14px;width:270px;max-width:90%;margin-top:12px;padding:8px;border-radius:12px;border:2px solid #3b3556;background:var(--btn);color:var(--ink);text-align:center"><button id="bk" class="alt">वापस</button></div>
+<script>
+(()=>{
+const proto=location.protocol==='https:'?'wss:':'ws:';
+const room={join(code){return new Promise((res,rej)=>{
+ let ws;try{ws=new WebSocket(proto+'//'+location.host+'/ws?room='+encodeURIComponent(code))}catch(e){return rej(e)}
+ let me=null,peers=[],hs=[],done=false;
+ const t=setTimeout(()=>{if(!done){done=true;try{ws.close()}catch(e){}rej(new Error('timeout'))}},10000);
+ const fire=()=>hs.forEach(f=>{try{f({peers,joined:[],left:[],updated:[]})}catch(x){}});
+ const api={name:code,peers:()=>peers,
+  onPeers(fn){hs.push(fn);return()=>{hs=hs.filter(x=>x!==fn)}},
+  presence(p){if(ws.readyState===1)ws.send(JSON.stringify({t:'p',p}));return Promise.resolve()},
+  leave(){try{ws.close()}catch(e){}return Promise.resolve()}};
+ ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
+  if(m.t==='hi'){me=m.id;if(!done){done=true;clearTimeout(t);res(api)}}
+  else if(m.t==='full'&&!done){done=true;clearTimeout(t);rej(new Error('full'))}
+  else if(m.t==='s'){peers=m.peers.map(q=>({peer:q.id,isMe:q.id===me,sameTab:q.id===me,kind:'viewer',guest:false,by:null,presence:q.p||{}}));fire()}};
+ ws.onerror=()=>{if(!done){done=true;clearTimeout(t);rej(new Error('ws'))}};
+ ws.onclose=()=>{if(!done){done=true;clearTimeout(t);rej(new Error('closed'))}else{peers=peers.filter(q=>q.isMe);fire()}};
+})}};
+window.claude={use:async n=>n==='room'?room:null};
+})();
+</script>
+<script>
+const cv=document.getElementById('c'),g=cv.getContext('2d'),stage=document.getElementById('stage');
+const W=360,H=640,N=4,RX=30,LW=75,PY=H-130;
+const lx=i=>RX+LW*i+LW/2;
+const cols=['#e63946','#d62828','#ff4d4d','#c1121f','#ff6b6b'];
+let st='start',lane=1,px=lx(1),obs=[],coins=[],speed=4,dist=0,cn=0,off=0,gap=0,best=0,last=0;
+const R0=Math.random.bind(Math);
+let nitro=100,boost=false,hold=false,nf=0,mute=false,agi=.25,nd=1,pc='#ffc928',pw=38,ph=64;
+const sfx={ctx:null,o:null,gn:null,
+init(){if(!this.ctx){try{const C=window.AudioContext||window.webkitAudioContext;this.ctx=new C();this.o=this.ctx.createOscillator();this.gn=this.ctx.createGain();this.o.type='sawtooth';this.o.connect(this.gn).connect(this.ctx.destination);this.gn.gain.value=0;this.o.start()}catch(e){this.ctx=null}}
+if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
+eng(){if(!this.ctx)return;const t=this.ctx.currentTime;this.o.frequency.setTargetAtTime(50+speed*9,t,.1);this.gn.gain.setTargetAtTime(st==='play'&&!mute?.035:0,t,.1)},
+tone(f,d,ty,v){if(!this.ctx||mute)return;const c=this.ctx,o=c.createOscillator(),n=c.createGain();o.type=ty;o.frequency.value=f;n.gain.setValueAtTime(v,c.currentTime);n.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(n).connect(c.destination);o.start();o.stop(c.currentTime+d)},
+coin(){this.tone(880,.12,'square',.08);setTimeout(()=>this.tone(1320,.15,'square',.08),70)},
+crash(){this.tone(90,.5,'sawtooth',.25);this.tone(60,.6,'square',.2)}};
+try{best=+localStorage.getItem('hr_best')||0}catch(e){}
+
+function fit(){const s=Math.min(stage.clientWidth/W,stage.clientHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px'}
+addEventListener('resize',fit);
+
+function reset(){lane=1;px=lx(1);obs=[];coins=[];speed=4;dist=0;cn=0;off=0;gap=0;nitro=100;boost=false;nf=0}
+function spawn(){
+  const free=[0,1,2,3],n=Math.random()<.25?2:1,r=Math.random(),truck=r<.3,bike=!truck&&r<.5;
+  for(let k=0;k<n;k++){const l=free.splice(Math.random()*free.length|0,1)[0];
+    obs.push({l,y:-130,w:truck?40:bike?20:40,h:truck?108:bike?44:64,c:cols[Math.random()*cols.length|0],t:truck,k:bike?'b':'c'})}
+  if(Math.random()<.6)coins.push({l:free[Math.random()*free.length|0],y:-50});
+}
+function move(d){if(st!=='play')return;lane=Math.max(0,Math.min(N-1,lane+d))}
+
+function car(x,y,w,h,c,truck,me){
+  g.save();g.translate(x,y);
+  g.fillStyle='#111';[-1,1].forEach(s=>{g.fillRect(s*(w/2)-(s>0?0:5)+(s>0?-2:0),6,7,14);g.fillRect(s*(w/2)-(s>0?0:5)+(s>0?-2:0),h-20,7,14)});
+  g.fillStyle=c;g.beginPath();g.roundRect(-w/2,0,w,h,8);g.fill();
+  if(truck){
+    g.fillStyle='rgba(255,255,255,.85)';for(let i=0;i<4;i++)g.fillRect(-w/2+2,36+i*17,w-4,5);
+    g.fillStyle='#fff4d6';g.beginPath();g.roundRect(-w/2+4,4,w-8,24,5);g.fill();
+    g.fillStyle='#1d1a2b';g.fillRect(-w/2+7,8,w-14,10);
+  }else{
+    g.fillStyle=me?'#1d1a2b':'rgba(0,0,0,.45)';g.beginPath();g.roundRect(-w/2+5,16,w-10,16,4);g.fill();
+    g.fillStyle='rgba(0,0,0,.35)';g.fillRect(-w/2+6,h-22,w-12,10);
+  }
+  if(me){g.fillStyle='#1d1a2b';g.fillRect(-9,-3,18,5);g.fillStyle='#fffbe0';g.fillRect(-w/2+3,-2,8,5);g.fillRect(w/2-11,-2,8,5)}
+  g.restore();
+}
+
+function draw(){
+  g.fillStyle='#2a2540';g.fillRect(0,0,W,H);
+  for(let y=-90+(off%90);y<H;y+=90){[14,346].forEach(x=>{g.fillStyle='#2f6b4f';g.beginPath();g.arc(x,y,10,0,7);g.fill()})}
+  g.fillStyle='#37343f';g.fillRect(RX,0,W-2*RX,H);
+  g.fillStyle='#ffc928';g.fillRect(RX-3,0,3,H);g.fillRect(W-RX,0,3,H);
+  g.fillStyle='#e9e2c8';
+  for(let i=1;i<N;i++)for(let y=-60+(off%60);y<H;y+=60)g.fillRect(RX+LW*i-2,y,4,30);
+  coins.forEach(c=>{g.fillStyle='#ffc928';g.beginPath();g.arc(lx(c.l),c.y,11,0,7);g.fill();g.fillStyle='#b8860b';g.font='800 14px "Baloo 2",sans-serif';g.textAlign='center';g.fillText('₹',lx(c.l),c.y+5)});
+  obs.forEach(o=>car(lx(o.l),o.y,o.w,o.h,o.c,o.t,false));
+  if(nf>0){g.fillStyle='rgba(6,6,24,'+(.62*nf)+')';g.fillRect(0,0,W,H)}
+  g.fillStyle='rgba(255,251,224,'+(.12+nf*.3)+')';g.beginPath();g.moveTo(px-14,PY);g.lineTo(px+14,PY);g.lineTo(px+30,PY-120);g.lineTo(px-30,PY-120);g.fill();
+  if(boost){g.fillStyle='#ff6b35';g.beginPath();g.moveTo(px-12,PY+64);g.lineTo(px,PY+94+R0()*20);g.lineTo(px+12,PY+64);g.fill()}
+  if(mpOn&&fr&&st==='play'&&fr.presence.d!=null&&fr.presence.fin==null){const q=fr.presence,gy=PY-((+q.d||0)-dist)*.4;fx+=((+q.x||fx)-fx)*.3;if(gy>-70&&gy<H){g.globalAlpha=.55;car(fx,gy,38,64,/^#[0-9a-f]{6}$/i.test(q.c)?q.c:'#fff',false,true);g.globalAlpha=1}}
+  car(px,PY+(64-ph),pw,ph,pc,false,true);
+  g.textAlign='left';g.fillStyle='#fff4d6';g.font='800 24px "Baloo 2",sans-serif';
+  g.fillText('स्कोर '+(dist/20|0),14,34);
+  g.textAlign='right';g.fillText('सिक्के '+cn,W-14,34);
+  g.font='500 14px "Baloo 2",sans-serif';g.fillText('सबसे ऊँचा '+best,W-14,54);
+  g.fillStyle='rgba(255,255,255,.25)';g.fillRect(14,44,100,8);g.fillStyle=boost?'#ff6b35':'#ffc928';g.fillRect(14,44,nitro,8);
+  if(mpOn&&fr&&st==='play'){g.textAlign='left';g.fillStyle='#fff4d6';g.fillText('दोस्त '+((+fr.presence.d||0)/20|0),14,72)}
+}
+
+function hit(){
+  const ax=px-17,ay=PY+4,aw=34,ah=56;
+  return obs.some(o=>{const bx=lx(o.l)-o.w/2+3;return ax<bx+o.w-6&&ax+aw>bx&&ay<o.y+o.h-3&&ay+ah>o.y+3});
+}
+
+function end(){
+  st='over';boost=false;sfx.eng();sfx.crash();const s=dist/20|0;
+  if(s>best){best=s;try{localStorage.setItem('hr_best',best)}catch(e){}}
+  document.getElementById('t').textContent='टक्कर हो गई!';
+  document.getElementById('m').innerHTML='स्कोर '+s+'<br>सिक्के '+cn+'<br>सबसे ऊँचा '+best;
+  document.getElementById('go').textContent=mpOn?'दोबारा खेलें (दोस्त के साथ)':'फिर से खेलें';
+  if(mpOn){myS=s;try{rm.presence({fin:raceId,s}).catch(()=>{})}catch(e){}showResult()}
+  document.getElementById('ov').classList.remove('hide');
+}
+
+function loop(t){
+  const d=Math.min(2,(t-last)/16.67||1);last=t;
+  if(st==='play'){
+    boost=hold&&nitro>0;nitro=boost?Math.max(0,nitro-1.2*nd*d):Math.min(100,nitro+.08*d);
+    speed=Math.min(9,4+dist/3500)*(boost?1.5:1);dist+=speed*d;off+=speed*d;gap-=speed*d;
+    nf=Math.max(0,Math.min(1,Math.sin(dist/3000)*1.5));sfx.eng();
+    if(mpOn&&rm&&t-sent>100){sent=t;rm.presence({x:px|0,d:dist|0,c:pc}).catch(()=>{})}
+    if(gap<=0){spawn();gap=240+speed*14+Math.random()*120}
+    px+=(lx(lane)-px)*Math.min(1,agi*d);
+    obs.forEach(o=>o.y+=speed*d*(o.k==='b'?1.25:1));coins.forEach(c=>c.y+=speed*d);
+    obs=obs.filter(o=>o.y<H+10);
+    coins=coins.filter(c=>{if(Math.abs(lx(c.l)-px)<26&&Math.abs(c.y-(PY+30))<40){cn++;nitro=Math.min(100,nitro+10);sfx.coin();return false}return c.y<H+10});
+    if(hit())end();
+  }
+  draw();requestAnimationFrame(loop);
+}
+
+document.getElementById('go').onclick=()=>{sfx.init();if(mpOn){openMp();return}Math.random=R0;reset();st='play';document.getElementById('ov').classList.add('hide')};
+const tap=(id,d)=>{const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();move(d)})};
+tap('bl',-1);tap('br',1);
+const nb=document.getElementById('nb');nb.addEventListener('pointerdown',e=>{e.preventDefault();hold=true});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>nb.addEventListener(ev,()=>hold=false));
+const mb=document.getElementById('mb');mb.onclick=()=>{mute=!mute;mb.textContent=mute?'🔇':'🔊';sfx.eng()};
+document.querySelectorAll('.cb').forEach(b=>b.onclick=()=>{document.querySelectorAll('.cb').forEach(x=>x.classList.remove('on'));b.classList.add('on');pc=b.dataset.c;pw=+b.dataset.w;ph=+b.dataset.h;agi=+b.dataset.a;nd=+b.dataset.n});
+addEventListener('keydown',e=>{if(e.key==='Shift'||e.key==='ArrowUp'||e.key==='w')hold=true});
+addEventListener('keyup',e=>{if(e.key==='Shift'||e.key==='ArrowUp'||e.key==='w')hold=false});
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();move(e.clientX-r.left<r.width/2?-1:1)});
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')move(-1);
+  if(e.key==='ArrowRight'||e.key==='d')move(1);
+  if((e.key==='Enter'||e.key===' ')&&st!=='play'&&document.activeElement.id!=='go')document.getElementById('go').click();
+});
+const $=id=>document.getElementById(id);
+let rm=null,code='',round=0,raceId=0,mpOn=false,inLobby=false,iReady=false,fr=null,fx=px,sent=0,myS=0;
+const hs=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const rng=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const others=()=>rm?rm.peers().filter(p=>!p.isMe&&p.kind==='viewer'):[];
+const friend=()=>others()[0]||null;
+function status(){const n=others().length;$('ms').textContent=rm?('कमरे का कोड: '+code+'\n'+(n?'दोस्त जुड़ गया':'दोस्त का इंतज़ार...')):'';$('rd').disabled=!n||iReady}
+function openMp(){$('ov').classList.add('hide');$('mp').classList.remove('hide');inLobby=true;iReady=false;$('rd').textContent='तैयार हूँ';$('jn').hidden=!!rm;$('ci').hidden=!!rm;$('rd').hidden=!rm;$('sh').hidden=!rm;status()}
+async function joinRoom(){
+  const c=$('ci').value.trim().toLowerCase();
+  if(!/^[a-z0-9][a-z0-9_.-]{0,47}$/.test(c)){$('ms').textContent='कोड में सिर्फ़ अंग्रेज़ी अक्षर और अंक रखिए।';return}
+  try{
+    const room=window.claude?await claude.use('room'):null;
+    if(!room){$('ms').textContent='यह सुविधा यहाँ उपलब्ध नहीं है। दोस्त को इस पेज का शेयर-एक्सेस दीजिए और दोनों साइन-इन रहिए।';return}
+    rm=await room.join(c);code=c;mpOn=true;
+    try{location.hash=c}catch(e){}
+    rm.onPeers(()=>{fr=friend();status();onPeerChange()});
+    openMp();
+  }catch(e){$('ms').textContent='कमरे में नहीं जा सके। फिर कोशिश कीजिए।'}
+}
+function onPeerChange(){
+  const o=others();
+  if(inLobby&&iReady&&o.length&&o.every(x=>x.presence.rd===round))startMp();
+  showResult();
+}
+function startMp(){
+  inLobby=false;iReady=false;raceId=round;Math.random=rng(hs(code)+round);round++;
+  $('mp').classList.add('hide');sfx.init();reset();fr=friend();fx=px;st='play';
+}
+function showResult(){
+  if(!mpOn||st!=='over')return;
+  const f=friend(),m=$('m'),base='आपका स्कोर '+myS+'<br>सिक्के '+cn+'<br>';
+  if(!f){m.innerHTML=base+'दोस्त चला गया';return}
+  const q=f.presence;
+  if(q.fin!==raceId){m.innerHTML=base+'दोस्त अभी खेल रहा है: '+((+q.d||0)/20|0);return}
+  const fs=+q.s||0;
+  $('t').textContent=myS>fs?'आप जीत गए! 🏆':myS<fs?'दोस्त जीत गया':'बराबरी!';
+  m.innerHTML=base+'दोस्त का स्कोर '+fs;
+}
+$('fr').onclick=()=>{openMp();if(!rm)joinRoom()};$('jn').onclick=joinRoom;
+const oldSh=async()=>{const u=location.origin+location.pathname+'#'+code,t='चलो हाईवे रेस खेलते हैं! इस लिंक पर आओ:';
+  try{if(navigator.share){await navigator.share({title:'हाईवे रेस',text:t,url:u});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(t+' '+u);$('ms').textContent+='\nलिंक कॉपी हो गया, दोस्त को भेज दीजिए';return}catch(e){}
+  $('ms').textContent+='\n'+u};
+$('rd').onclick=()=>{iReady=true;status();$('rd').textContent='दोस्त के तैयार होने का इंतज़ार...';rm.presence({rd:round,fin:null}).catch(()=>{});onPeerChange()};
+$('bk').onclick=()=>{if(rm)rm.leave().catch(()=>{});rm=null;mpOn=false;inLobby=false;fr=null;Math.random=R0;$('mp').classList.add('hide');$('ov').classList.remove('hide');$('go').textContent='खेल शुरू करें'};
+$('sh').onclick=()=>{
+  const u=location.origin+location.pathname+'#'+code,t='चलो हाईवे रेस खेलते हैं! इस लिंक पर आओ:',l=$('lk');
+  l.value=u;l.hidden=false;l.focus();l.select();try{l.setSelectionRange(0,u.length)}catch(e){}
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}
+  if(!ok&&navigator.clipboard)navigator.clipboard.writeText(u).catch(()=>{});
+  $('ms').textContent='कमरे का कोड: '+code+'\nलिंक नीचे है, लंबा दबाकर कॉपी कीजिए और दोस्त को भेजिए';
+  try{if(navigator.share)navigator.share({title:'हाईवे रेस',text:t,url:u}).catch(()=>{})}catch(e){}
+};
+if(location.hash.length>1){$('ci').value=location.hash.slice(1).toLowerCase().replace(/[^a-z0-9_.-]/g,'');openMp();joinRoom()}else $('ci').value='r-'+R0().toString(36).slice(2,6);
+fit();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
